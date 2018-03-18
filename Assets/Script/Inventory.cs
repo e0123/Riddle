@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class Inventory : MonoSingleton<Inventory> {
 
 	#region 資料儲存
-	class Itembox
+	public class Itembox
 	{
 		public string name;
 		public int quantity;
@@ -22,53 +22,32 @@ public class Inventory : MonoSingleton<Inventory> {
 
 	int boxorder_gave = 0;//給出去的box 號碼到幾號了
 
-	List<Itembox> list_itemboxs = new List<Itembox>();
+	List<Itembox> list_itemboxs;
 
+	bool hasitem
+	{
+		get{
+			return list_itemboxs != null && list_itemboxs.Count != 0;
+		}
+	}
+
+	int itemcount
+	{
+		get{
+			if (!hasitem)
+				return 0;
+			else
+				return list_itemboxs.Count;
+		}
+	}
 
 	#endregion
 
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
 
 	#region 遊戲互動端
 
-	int select_uibox;
-	public int Select_uibox
-	{
-		get{ return select_uibox; }
-		set{ 
-			select_uibox = Mathf.Clamp (value, -1, list_uiitembar.Count);
-		}
-	}
-
-	public void SelectItem(int id)
-	{
-		if (id >= list_itemboxs.Count)
-			return;
-
-		if (id == Select_uibox)//一樣的就取消選取
-			Select_uibox = -1;		
-		else
-			Select_uibox = id;
-		
-		Refresh_Itembar ();
-	}
-
-	public string GetSelectItemName()
-	{
-		if (Select_uibox == -1)
-			return "NULL";
-		else
-			return list_itemboxs[Select_uibox].name;
-	}
 
 	public void AddItem(string _name,int _quantity)
 	{
@@ -76,7 +55,9 @@ public class Inventory : MonoSingleton<Inventory> {
 		list_itemboxs.Add (newitem);
 		boxorder_gave++;
 		Debug.Log ("Add");
-		Refresh_Itembar ();
+		Sort_Itembox ();
+		if (OnItemChange != null)
+			OnItemChange (list_itemboxs);
 	}
 
 	/// <summary>
@@ -107,54 +88,66 @@ public class Inventory : MonoSingleton<Inventory> {
 			rtn = false;
 		}
 		Debug.Log ("Remove");
-		Refresh_Itembar ();
+
+		if (OnItemChange != null)
+			OnItemChange (list_itemboxs);
+
 		return rtn;
 	}
 
-
-
-	#endregion
-
-	#region UI介面
-
-	[System.Serializable]
-	public struct UIBar
+	public Itembox GetItem(int _order)
 	{
-		public Text text;
+		if (!hasitem)
+			return null;
+
+		if (_order >= itemcount)
+			return null;
+
+		return list_itemboxs [_order];
 	}
 
-	public List<UIBar> list_uiitembar;
 
-	public Image select_img;
-
-	void Refresh_Itembar()
-	{
-		if (list_uiitembar == null)
+	void Sort_Itembox(){
+	
+		if (!hasitem)
 			return;
 
 		//根據box分配的順序, 物件欄顯示
 		list_itemboxs.Sort ((x, y) => {
 			return x.order.CompareTo (y.order);
 		});
+	}
 
 
-		for (int i = 0; i < list_uiitembar.Count; i++) {//每個UI物件欄
-			if (i < list_itemboxs.Count)//有物件塞入物件文字
-				list_uiitembar [i].text.text = list_itemboxs [i].name;
-			else //沒物件文字清空
-				list_uiitembar [i].text.text = "";
-			
-		}
 
-		//鎖定物件
-		if (Select_uibox == -1)
-			select_img.gameObject.SetActive (false);
-		else {
-			select_img.gameObject.SetActive (true);
-			select_img.transform.position = list_uiitembar [Select_uibox].text.transform.position;
-		}
+
+	#endregion
+
+
+
+	// Use this for initialization
+	void Start () {
 
 	}
 
-	#endregion
+	// Update is called once per frame
+	void Update () {
+
+	}
+
+	void Awake()
+	{
+		list_itemboxs = new List<Itembox>();
+	}
+
+	void OnEnable()
+	{
+		UIManager.Instance.UnSelectItem ();
+		OnItemChange = null;
+		OnItemChange += UIManager.Instance.Refresh_Itembar_data;
+		OnItemChange (list_itemboxs);
+	}
+
+	public delegate void MyDelegate(List<Itembox> _itemlist);
+	public MyDelegate OnItemChange;//每當物品改變時，把完整物品列表，傳送給該傳的人。例如:UI物品欄
 }

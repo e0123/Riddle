@@ -9,6 +9,7 @@ public class MainGame : MonoBehaviour {
 
 	UserInput _input;
 	Inventory _inv;
+	UIManager _UiM;
 
 	#endregion
 
@@ -16,22 +17,34 @@ public class MainGame : MonoBehaviour {
 	{
 		_input = UserInput.Instance;
 		_inv = Inventory.Instance;
+		_UiM = UIManager.Instance;
 	}
 
 	// Use this for initialization
 	void Start () {
 
-		_inv.SelectItem (-1);
+		_UiM.UnSelectItem ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
+
+		ProcUiTouch ();
+		ProcGameobjectTouch ();
+
+
+	}
+
+	#region 點擊動作
+
+	void ProcUiTouch()
+	{
 		//偵測UI點擊
 		UserInput.UITouchInfo uitouch = _input.GetUITouchInfo();
 
 		if (uitouch != null) {
-		
+
 			// 單點
 			if (uitouch.phase == TouchPhase.Began) {
 				switch (uitouch.ui_obj) {
@@ -40,27 +53,19 @@ public class MainGame : MonoBehaviour {
 					int prevcs = ((int)nowCamScene + (int)CAMERA_SCENE.MAX - 1) % (int)CAMERA_SCENE.MAX;
 					Change_CameraScene (prevcs);
 					break;
-			
+
 				case UserInput.UI_OBJ.RIGHT_BTN:
 					int nextcs = ((int)nowCamScene + 1) % (int)CAMERA_SCENE.MAX;
 					Change_CameraScene (nextcs);
 					break;
 
 				case UserInput.UI_OBJ.ITEM_0:
-					_inv.SelectItem (0);
-					break;
-
 				case UserInput.UI_OBJ.ITEM_1:
-					_inv.SelectItem (1);
-					break;
-
 				case UserInput.UI_OBJ.ITEM_2:
-					_inv.SelectItem (2);
+				case UserInput.UI_OBJ.ITEM_3:					
+					_UiM.SelectItem (uitouch.ui_obj);
 					break;
 
-				case UserInput.UI_OBJ.ITEM_3:
-					_inv.SelectItem (3);
-					break;
 
 				case UserInput.UI_OBJ.RESET:
 					Application.Quit ();
@@ -80,25 +85,26 @@ public class MainGame : MonoBehaviour {
 				}		
 			}
 		}
+	}
 
-
-
+	void ProcGameobjectTouch(){
+	
 		// 點3D物件
 		if (_input.GetObjectTouch() != null) {
-			
+
 			SceneObject so = _input.GetObjectTouch ().GetComponent<SceneObject> ();
 			if (so != null) {
-			
+
 				// 單純收集物件
 				if (so.collectable) {
-				
+
 					_inv.AddItem (so.so_name, 1);
 					Destroy (so.gameObject);
 				} 
 
 				// 跟物件互動
 				else {
-					string select_item = _inv.GetSelectItemName ();
+					string select_item = _UiM.GetSelectItemName ();
 					if ( select_item != "NULL") {
 
 						switch (so.so_name) {
@@ -115,18 +121,27 @@ public class MainGame : MonoBehaviour {
 								else if (select_item == "red_s")
 									so_c1.ChangePhase (SceneObject_Child1.PHASE.PHASE_RED);
 
-								_inv.RemoveItem (_inv.GetSelectItemName (), 1);
-								_inv.SelectItem (-1);
+								_inv.RemoveItem (_UiM.GetSelectItemName (), 1);
+								_UiM.UnSelectItem ();
 							}
 							break;
-						
+
 						}					
 					}									
 				}
-			
+
 			}
 		}
 	}
+
+
+	#endregion
+
+
+
+
+
+
 
 
 
@@ -134,10 +149,15 @@ public class MainGame : MonoBehaviour {
 
 	public enum CAMERA_SCENE
 	{		
+		//正常左右按鈕移動的場景
 		ROOM1=0,
 		ROOM2,
 
-		MAX
+
+
+		MAX,
+		//點擊物件才切換的場景，需要手動設定進入和退出的場景
+		ROOM1_BIGBOX
 	}
 
 	CAMERA_SCENE nowCamScene;

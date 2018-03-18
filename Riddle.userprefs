@@ -1,12 +1,14 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Script\UIButton.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Script\UIManager.cs">
     <Files>
-      <File FileName="Assets\Script\UserInput.cs" Line="67" Column="25" />
+      <File FileName="Assets\Script\UserInput.cs" Line="1" Column="1" />
       <File FileName="Assets\Script\MainGame.cs" Line="1" Column="1" />
       <File FileName="Assets\Script\MonoSingleton.cs" Line="1" Column="1" />
-      <File FileName="Assets\Script\PreUpdate.cs" Line="6" Column="18" />
-      <File FileName="Assets\Script\UIButton.cs" Line="14" Column="12" />
+      <File FileName="Assets\Script\PreUpdate.cs" Line="1" Column="1" />
+      <File FileName="Assets\Script\UIButton.cs" Line="1" Column="1" />
+      <File FileName="Assets\Script\Inventory.cs" Line="1" Column="1" />
+      <File FileName="Assets\Script\UIManager.cs" Line="53" Column="36" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
